@@ -1,101 +1,35 @@
 function doPost(e) {
   console.log("action gas");
-  var logSheet = spreadSheet.getSheetByName("log_sheet");
-
-  const parsedData = JSON.parse(e.parameter.payload);
-  console.log("inside");
-  console.log("e");
-  console.log(e);
-  const actionTs = JSON.parse(e.parameter.payload).action_ts;
-  console.log("parsedData");
-  console.log(parsedData);
-  const type = parsedData.type;
-
-  const responseUrl = parsedData.response_url;
-  const response = {
-    text: "processing...",
-  };
-  const options = {
-    method: "post",
-    contentType: "application/json",
-    payload: JSON.stringify(response),
-  }
-  // UrlFetchApp.fetch(responseUrl, options);
-
+  const logSheet = spreadSheet.getSheetByName("log_sheet");
+  var payload = JSON.parse(e.parameter.payload);
+  console.log("inside");;
+  console.log("payload");
+  console.log(payload);
+  const type = payload.type;
+  console.log("type");
+  console.log(type);
   //true => /start_work
   if (type === "block_actions") {
     console.log("action start_work");
-
-    // Convert epoch time to milliseconds
-    const epochTimeInMilliseconds = actionTs * 1000;
-    // Create a new Date object with the converted milliseconds
-    const stopTime = new Date(epochTimeInMilliseconds);
-    stopTime.setMilliseconds(0);
-    logSheet.appendRow([stopTime, "stop"]);
-    // Return a 200 OK response
-    // Return an object containing status 200
-    //const response = { status: 200 };
+    const responseUrl = payload.response_url;
+    console.log("responseUrl");
+    console.log(responseUrl);
+    const response = {
+      text: "processing...",
+    };
+    const options = {
+      method: "post",
+      contentType: "application/json",
+      payload: JSON.stringify(response),
+    }
+    UrlFetchApp.fetch(responseUrl, options);
+    const actionTs = payload.action_ts;
+    return startWorkProcess(logSheet, actionTs);
   } else {
     ///modify
-    
     console.log("else");
-    return ContentService.createTextOutput();
-    var payload = JSON.parse(e.parameter.payload);
-    var values = payload.view.state.values;
-
-    console.log(values);
-
-    // Declare variables to store the values
-    var timepicker_start;
-    var timepicker_finish;
-    var timepicker_rest;
-    var datepicker;
-
-    // Loop through keys
-    for (var key in values) {
-      if (values[key]['timepicker-start'] !== undefined) {
-        timepicker_start = values[key]['timepicker-start'].selected_time;
-      } else if (values[key]['timepicker-finish'] !== undefined) {
-        timepicker_finish = values[key]['timepicker-finish'].selected_time;
-      } else if (values[key]['timepicker-rest'] !== undefined) {
-        timepicker_rest = values[key]['timepicker-rest'].selected_time;
-      } else if (values[key]['datepicker'] !== undefined) {
-        datepicker = values[key]['datepicker'].selected_date;
-      }
-    }
-
-    // Log the values
-    console.log("Timepicker Start: " + timepicker_start);
-    console.log("Timepicker Finish: " + timepicker_finish);
-    console.log("Timepicker Rest: " + timepicker_rest);
-    console.log("Datepicker: " + datepicker);
-
-    // Parse the date to a JavaScript Date object
-    const parsedDate = new Date(datepicker);
-
-    console.log("log_sheet");
-
-    // スプレッドシートを取得
-    const spreadSheet = SpreadsheetApp.openByUrl(sheet_url);
-    // Construct dates using new Date()
-    const modify_start = new Date(datepicker + " " + timepicker_start + ":00");
-    const modify_finish = new Date(datepicker + " " + timepicker_finish + ":00");
-
-    // Log the logSheetName
-    console.log("Log Sheet Name: " + logSheetName);
-    try {
-      logSheet.appendRow([modify_start, "modify-start"]);
-      logSheet.appendRow([modify_finish, "modify-finish"]);
-      logSheet.appendRow([timepicker_rest, "rest"]);
-      // Return a 200 OK response
-      // Return an object containing status 200
-      const response = { status: 200 };
-      return ContentService.createTextOutput(JSON.stringify(response)).setMimeType(ContentService.MimeType.JSON);
-    } catch (error) {
-      console.error(error);
-      const response = { status: 500 };
-      return ContentService.createTextOutput(JSON.stringify(response)).setMimeType(ContentService.MimeType.JSON);
-    }
+    const values = payload.view.state.values;
+    return modifyWorkProcess(logSheet, values);
   }
 }
 
