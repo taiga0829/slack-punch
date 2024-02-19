@@ -15,7 +15,7 @@ function doPost(e) {
     console.log("responseUrl");
     console.log(responseUrl);
     const response = {
-      text: "processing...",
+      text: "sent request successfully👊👊",
     };
     const options = {
       method: "post",
@@ -23,7 +23,12 @@ function doPost(e) {
       payload: JSON.stringify(response),
     }
     UrlFetchApp.fetch(responseUrl, options);
-    const actionTs = payload.action_ts;
+    console.log("payload");
+    console.log(payload);
+    // Access the first action object from the actions array
+    const action = payload.actions[0];
+    // Retrieve the action timestamp (action_ts) from the action object
+    const actionTs = action.action_ts;
     return startWorkProcess(logSheet, actionTs);
   } else {
     ///modify

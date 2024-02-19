@@ -1,9 +1,10 @@
-function startWorkProcess(logSheet,actionTs) {
+function startWorkProcess(logSheet, actionTs) {
   // Convert epoch time to milliseconds
-  const epochTimeInMilliseconds = actionTs * 1000;
-  // Create a new Date object with the converted milliseconds
-  const stopTime = new Date(epochTimeInMilliseconds);
-  stopTime.setMilliseconds(0);
-  logSheet.appendRow([stopTime, "stop"]);
+  console.log("actionTs");
+  console.log(actionTs);
+  // Convert the actionTs to a JavaScript Date object
+  const actionDate = new Date(parseFloat(actionTs) * 1000);
+  actionDate.setMilliseconds(0);
+  logSheet.appendRow([actionDate, "stop"]);
   return ContentService.createTextOutput();
 }
