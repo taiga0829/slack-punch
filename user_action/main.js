@@ -158,11 +158,3 @@ const spreadSheet = SpreadsheetApp.openByUrl(sheet_url);
 // function doGet() {
 // }
 
-// function copySheet(sheetName, templateName) {
-//   // Get sample sheet
-//   console.log("inside copySheet");
-//   var templateSheet = spreadSheet.getSheetByName(templateName);
-//   // Copy sample sheet to new sheet
-//   // 0.5 sec
-//   templateSheet.copyTo(spreadSheet).setName(sheetName);
-// }
