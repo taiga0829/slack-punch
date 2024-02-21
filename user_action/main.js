@@ -3,7 +3,6 @@
 const sheet_url = PropertiesService.getScriptProperties().getProperty("SHEET_URL");
 const slack_token = PropertiesService.getScriptProperties().getProperty("SLACK_TOKEN");
 
-
 // function main(e) {
 //   console.log("main");
 //   console.log(JSON.stringify(e));
