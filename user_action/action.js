@@ -1,10 +1,14 @@
 function doPost(e) {
+  const spreadSheet = SpreadsheetApp.openByUrl(sheet_url);
   console.log("action gas");
   const logSheet = spreadSheet.getSheetByName("log_sheet");
   var payload = JSON.parse(e.parameter.payload);
   console.log("inside");;
   console.log("payload");
   console.log(payload);
+  console.log("blocks");
+  //console.log(payload.blocks);
+  //console.log(payload.blocks[-1]);
   const type = payload.type;
   console.log("type");
   console.log(type);
@@ -32,6 +36,15 @@ function doPost(e) {
     return startWorkProcess(logSheet, actionTs);
   } else {
     ///modify
+    // TOOD: create errors
+        console.log("else");
+    const error = {
+      "response_action": "errors",
+      "errors": {
+        "my_block_id": "You may not select a due date in the past"
+      }
+    }
+    return ContentService.createTextOutput(JSON.stringify(error)).setMimeType(ContentService.MimeType.JSON);
     console.log("else");
     const values = payload.view.state.values;
     return modifyWorkProcess(logSheet, values);

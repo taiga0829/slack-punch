@@ -2,7 +2,6 @@
 //プロパティストアから"CALENDAR_ID"の値を取得
 const sheet_url = PropertiesService.getScriptProperties().getProperty("SHEET_URL");
 const slack_token = PropertiesService.getScriptProperties().getProperty("SLACK_TOKEN");
-const spreadSheet = SpreadsheetApp.openByUrl(sheet_url);
 
 
 // function main(e) {
