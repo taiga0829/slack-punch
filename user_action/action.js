@@ -37,14 +37,15 @@ function doPost(e) {
   } else {
     ///modify
     // TOOD: create errors
-        console.log("else");
-    const error = {
-      "response_action": "errors",
-      "errors": {
-        "my_block_id": "You may not select a due date in the past"
-      }
-    }
-    return ContentService.createTextOutput(JSON.stringify(error)).setMimeType(ContentService.MimeType.JSON);
+    console.log("else");
+
+    // const error = {
+    //   "response_action": "errors",
+    //   "errors": {
+    //     "my_block_id": "You may not select a due date in the past"
+    //   }
+    // }
+    // return ContentService.createTextOutput(JSON.stringify(error)).setMimeType(ContentService.MimeType.JSON);
     console.log("else");
     const values = payload.view.state.values;
     return modifyWorkProcess(logSheet, values);

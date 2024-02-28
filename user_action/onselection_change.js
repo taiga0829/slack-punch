@@ -1,4 +1,4 @@
-const SUMMARY_SHEET_HEADER_HEIGHT = 2;
+const HIGHT_OF_SHEET = 2;
 function onSelectionChange(e) {
   console.log("inside select");
   // Check if e and e.source are not null
@@ -8,81 +8,111 @@ function onSelectionChange(e) {
     let logSheet = ss.getSheetByName("log_sheet");
     let summarySheets = getSheetsBySubstring("summary", ss);
     let eachdatesLogsMap = {};
+    let eachdatesLogsMapForModify = [];
     //OK
 
-    let oneBackTimestamp = "";
-    let isSameMonth = false;
+    let oneBackTimestampMonth = "";
+    let isSameYearAndMonth = false;
     let initFlag = 0;
     //get values from log sheet
     const logTable = logSheet.getDataRange().getValues();
     for (let i = 0; i < logTable.length; i++) {
-      let timestamp = logTable[i][0];
+      const timestamp = logTable[i][0];
+      const userState = logTable[i][1];
       const processingTimestamp = new Date(timestamp);
       // 2024/02
       const timestampYearAndMonth = `${processingTimestamp.getFullYear()}` + "/" + `${String(processingTimestamp.getMonth() + 1).padStart(2, '0')}`;
-      const timestampDay = processingTimestamp.getDate();
-      const timestampMonth = processingTimestamp.getMonth();
 
-      const targetTimestampCell = timestampDay + SUMMARY_SHEET_HEADER_HEIGHT;
-      let haveTimestampYearAndMonth = false;
+      let haveTimestampYearAndMonthInSummarySheet = false;
       let targetSummarySheet = "";
 
       summarySheets.forEach((summarySheet) => {
         // ex:) 2024/02 ∊ summary_2024/02
         if (summarySheet.getName().includes(timestampYearAndMonth)) {
-          haveTimestampYearAndMonth = true;
-          targetSummarySheet = summarySheet;
+          haveTimestampYearAndMonthInSummarySheet = true;
         }
       })
 
-      if (!haveTimestampYearAndMonth) {
+      if (!haveTimestampYearAndMonthInSummarySheet) {
         console.log("before copy function");
         const summarySheetName = "summary_" + timestampYearAndMonth;
         copySheet(summarySheetName, "template_summary", ss.getSheets());
         appendAllOfDaysInMonth(summarySheetName, ss.getSheets());
-        targetSummarySheet = ss.getSheetByName(summarySheetName);
-        console.log(summarySheetName);
       }
 
       // store current temp(month) . if they are different, transform it to 2d array, 
       //setvalues to sheet then different create another datesmap
-      isSameMonth = oneBackTimestamp == timestampMonth;
+      isSameYearAndMonth = oneBackTimestampMonth == timestampYearAndMonth;
       console.log("outside extract");
-      if (!isSameMonth && initFlag === 1) {
-        console.log("inside extract");
-        console.log(eachdatesLogsMap);
-        let twoDArrayToInsert = objectTo2DArray(eachdatesLogsMap, SUMMARY_SHEET_HEADER_HEIGHT);
+      if (!isSameYearAndMonth && initFlag === 1 && userState === "start") {
+        targetSummarySheet = getSheetsBySubstring(oneBackTimestampMonth, ss)[0];
+        let twoDArrayToInsert = objectTo2DArray(eachdatesLogsMap);
+        console.log("twoDArrayToInsert");
+        console.log(twoDArrayToInsert);
         //A3 to C33:
-        targetSummarySheet.getRange(3, 1, 34, 3).setValues(
+
+        targetSummarySheet.getRange(3, 1, 32, 3).setValues(
           twoDArrayToInsert
         );
       }
-      oneBackTimestamp = timestampMonth;
+      if (!isSameYearAndMonth && initFlag === 1 && userState === "modify-start") {
+        //extract modify
+
+      }
+      oneBackTimestampMonth = timestampYearAndMonth;
       initFlag = 1;
 
+
       //OK
-      console.log("logtable");
-      console.log(logTable);
+
       //2024/02/09 17:43:33 start=> 9:{ start:"17:43", } 
       //2024/02/10 20:43:33 start=>     stop:"20:43"} 
       // TODO: try to validation that start, start, 
       if (logTable[i][1] === "start" && logTable[i + 1][1] === "stop") {
         eachdatesLogsMap = addEachdatesLogsMap(logTable[i][0], logTable[i + 1][0], eachdatesLogsMap);
       }
-      // else if (logSheet[i][1] === "modify-start") {
-      //   //TODO: append 2d array
-      //   const modifyStartRange = `A${targetTimestampCell}`;
-      //   const modifyStopRange = `B${targetTimestampCell}`;
-      //   const modifyRestRange = `C${targetTimestampCell}`;
-      //   summarySheet.getRange(modifyStartRange).setValue([[logTable[i][0]]]);
-      //   summarySheet.getRange(modifyStopRange).setValue([[logTable[i + 1][0]]]);
-      //   summarySheet.getRange(modifyRestRange).setValue([[logTable[i + 2][0]]]);
-      // }
-      //   // TODO: extract and fill data in summary sheet (exclude modify things) 
-      //   //
-      //   //
+      else if (logTable[i][1] === "modify-start") {
+        //TODO: append 2d array
+        console.log("======");
+        console.log(logTable[i][0]);
+        console.log(logTable[i + 1][0]);
+        console.log(logTable[i + 2][0]);
+        const restMinute = logTable[i + 2][0].getHours() * 60 + logTable[i + 2][0].getMinutes();
+        console.log("restMinute");
+        console.log(restMinute);
+        eachdatesLogsMapForModify = addEachdatesLogsMapForModify(logTable[i][0], logTable[i + 1][0], restMinute, eachdatesLogsMapForModify);
+        console.log("eachdatesLogsMapForModify");
+        console.log(eachdatesLogsMapForModify);
+
+      }
     }
+    // after logtable loop
+    setModifyLogs(eachdatesLogsMapForModify, ss);
   }
+}
+
+function getSummarySheetNameByDate(date) {
+  const summarySheetNameBasedOnDate = `summary_${date.getFullYear()}` + "/" + `${String(date.getMonth() + 1).padStart(2, '0')}`;
+  return summarySheetNameBasedOnDate;
+}
+
+function setModifyLogs(modify2DArray, ss) {
+
+  //Ax to Cx;
+  modify2DArray.forEach((e) => {
+    const startModifyDate = e[0];
+    const day = startModifyDate.getDate();
+    const targetSheetName = getSummarySheetNameByDate(startModifyDate);
+    const targetSheet = ss.getSheetByName(targetSheetName);
+    console.log("targetSheet");
+    console.log(targetSheet);
+    console.log("targetSheetName");
+    console.log(targetSheetName);
+    const rangeByDate = day + HIGHT_OF_SHEET;
+    targetSheet.getRange(rangeByDate, 1, 1, 3).setValues([e]);
+  })
+
+
 }
 
 function copySheet(sheetName, templateName, sheets) {
@@ -99,6 +129,12 @@ function copySheet(sheetName, templateName, sheets) {
   // 0.5 sec
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   templateSheet.copyTo(ss).setName(sheetName);
+}
+
+function addEachdatesLogsMapForModify(startTime, stopTime, restTime, eachdatesLogsMapForModify) {
+  const toAdd = [startTime, stopTime, restTime];
+  eachdatesLogsMapForModify.push(toAdd);
+  return eachdatesLogsMapForModify;
 }
 
 function appendAllOfDaysInMonth(sheetName, sheets) {
@@ -151,15 +187,6 @@ function addEachdatesLogsMap(startTime, stopTime, eachdatesLogsMap) {
 
   // Extract the day, hour, and minute from the Date objects
   const startDay = startTimeDate.getDate();
-  const startHour = startTimeDate.getHours();
-  const startMinute = startTimeDate.getMinutes();
-
-  const stopHour = stopTimeDate.getHours();
-  const stopMinute = stopTimeDate.getMinutes();
-
-  // Format the start and stop times as HH:mm
-  const formattedStartTime = ('0' + startHour).slice(-2) + ':' + ('0' + startMinute).slice(-2);
-  const formattedStopTime = ('0' + stopHour).slice(-2) + ':' + ('0' + stopMinute).slice(-2);
 
   // Check if the start day exists in eachdatesLogsMap, if not, create an empty array
   if (!eachdatesLogsMap[startDay]) {
@@ -168,50 +195,43 @@ function addEachdatesLogsMap(startTime, stopTime, eachdatesLogsMap) {
 
   // Push the new log entry to the array corresponding to the start day
   eachdatesLogsMap[startDay].push({
-    start: formattedStartTime,
-    stop: formattedStopTime
+    start: startTimeDate,
+    stop: stopTimeDate
   });
 
   // Return the updated eachdatesLogsMap
   return eachdatesLogsMap;
 }
 
-function objectTo2DArray(data, SUMMARY_SHEET_HEADER_HEIGHT) {
+function objectTo2DArray(data) {
   const result = [];
 
-  for (let y = 0; y <= 31 + SUMMARY_SHEET_HEADER_HEIGHT; y++) {
+  for (let y = 1; y <= 32; y++) {
     const row = [];
-
     for (let x = 0; x < 3; x++) { // Changed to 3 columns
-      if (y < SUMMARY_SHEET_HEADER_HEIGHT) {
-        row.push(null);
-      } else {
-        const day = (y - SUMMARY_SHEET_HEADER_HEIGHT) + 1;
-        const dayData = data[day.toString()];
-
-        if (dayData) {
-          if (x === 0 && dayData[0]) {
-            row.push(dayData[0].start);
-          } else if (x === 1 && dayData.length > 1) {
-            row.push(dayData[dayData.length - 1].stop);
-          } else if (x === 2 && dayData.length > 1) {
-            let restTime = 0;
-            for (let i = 1; i < dayData.length; i++) {
-              const start = new Date('1970-01-01T' + dayData[i - 1].stop + ':00');
-              const stop = new Date('1970-01-01T' + dayData[i].start + ':00');
-              restTime += stop - start;
-            }
-            // Convert milliseconds to minutes
-            row.push(restTime / (1000 * 60));
-          } else {
-            row.push(null);
+      const day = y;
+      const dayData = data[day.toString()];
+      if (dayData) {
+        if (x === 0 && dayData[0]) {
+          row.push(dayData[0].start);
+        } else if (x === 1 && dayData.length > 1) {
+          row.push(dayData[dayData.length - 1].stop);
+        } else if (x === 2 && dayData.length > 1) {
+          let restTime = 0;
+          for (let i = 1; i < dayData.length; i++) {
+            const start = new Date(dayData[i - 1].stop);
+            const stop = new Date(dayData[i].start);
+            restTime += stop - start;
           }
+          // Convert milliseconds to minutes
+          row.push(restTime / (1000 * 60));
         } else {
-          row.push(null);
+          row.push(0);
         }
+      } else {
+        row.push(0);
       }
     }
-
     result.push(row);
   }
 
@@ -220,8 +240,8 @@ function objectTo2DArray(data, SUMMARY_SHEET_HEADER_HEIGHT) {
 
 
 function getSheetsBySubstring(substring, ss) {
-  var sheets = ss.getSheets();
-  var matchingSheets = [];
+  const sheets = ss.getSheets();
+  let matchingSheets = [];
 
   for (var i = 0; i < sheets.length; i++) {
     var sheetName = sheets[i].getName();
@@ -231,7 +251,6 @@ function getSheetsBySubstring(substring, ss) {
       matchingSheets.push(sheets[i]);
     }
   }
-
   // Return the array of matching sheets
   return matchingSheets;
 }

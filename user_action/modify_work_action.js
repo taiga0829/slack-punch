@@ -51,13 +51,37 @@ function modifyWorkProcess(logSheet, values) {
   console.log("modify_finish");
   console.log(modify_finish);
 
+  const today = new Date();
+
+  //validation
+  if(modify_start >= modify_finish){
+    return ContentService.createTextOutput(JSON.stringify(modifyStartAndModifyFinishError)).setMimeType(ContentService.MimeType.JSON);
+  }else if(modify_start > today){
+    return ContentService.createTextOutput(JSON.stringify(modifyStartError)).setMimeType(ContentService.MimeType.JSON);
+  }
+  
   try {
     logSheet.appendRow([modify_start, "modify-start"]);
     logSheet.appendRow([modify_finish, "modify-finish"]);
-    logSheet.appendRow([timepicker_rest, "rest"]);
+    logSheet.appendRow([timepicker_rest, "modify-rest"]);
     return ContentService.createTextOutput();
   } catch (error) {
     console.error(error);
     return ContentService.createTextOutput(JSON.stringify(error)).setMimeType(ContentService.MimeType.JSON);
   }
 }
+
+const modifyStartError = { 
+   "response_action": "errors",
+      "errors": {
+        "start-time": "start time cannot be set for an upcoming day",
+      }
+}
+
+const modifyStartAndModifyFinishError = {
+      "response_action": "errors",
+      "errors": {
+        "start-time": "start time cannot be equal and greater than finish time",
+        "finish-time": "start time cannot be equal and greater than finish time"
+      }
+    }
