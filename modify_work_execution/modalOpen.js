@@ -1,6 +1,3 @@
-/**
- * モーダルBlocks
- */
 const createModalView = () => {
   return {
     "type": "modal",
@@ -28,6 +25,7 @@ const createModalView = () => {
         }
       },
       {
+        "block_id": "date-selection",
         "type": "input",
         "element": {
           "type": "datepicker",
@@ -41,11 +39,12 @@ const createModalView = () => {
         },
         "label": {
           "type": "plain_text",
-          "text": "Rest time",
+          "text": "Select the date when you want to modify",
           "emoji": true
         },  
       },
       {
+        "block_id": "start-time",
         "type": "input",
         "element": {
           "type": "timepicker",
@@ -64,6 +63,7 @@ const createModalView = () => {
         
       },
       {
+        "block_id": "finish-time",
         "type": "input",
         "element": {
           "type": "timepicker",
@@ -82,6 +82,7 @@ const createModalView = () => {
         
       },
       {
+        "block_id": "rest-time",
         "type": "input",
         "element": {
           "type": "timepicker",
@@ -99,20 +100,6 @@ const createModalView = () => {
           "emoji": true
         },
       }, 
-      {
-        "block_id": "my_block_id",
-        "type": "input",
-        "optional": true,
-        "label": {
-          "type": "plain_text",
-          "text": "Select a channel to post the result on",
-        },
-        "element": {
-          "action_id": "my_action_id",
-          "type": "conversations_select",
-          "response_url_enabled": true,
-        },
-      },
     ]
   }
 };
