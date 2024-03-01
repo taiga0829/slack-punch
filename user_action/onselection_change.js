@@ -7,25 +7,29 @@ function onSelectionChange(e) {
     const ss = e.source;
     let logSheet = ss.getSheetByName("log_sheet");
     let summarySheets = getSheetsBySubstring("summary", ss);
-    let eachdatesLogsMap = {};
+    let eachdatesLogsMap = [];
     let eachdatesLogsMapForModify = [];
+    let targetSummarySheet = "";
+    let timestamp;
+    let startTimestamp;
+    let isFirstLoop = true;
     //OK
 
-    let oneBackTimestampMonth = "";
+    let oneBackTimestampMonth = null;
     let isSameYearAndMonth = false;
-    let initFlag = 0;
     //get values from log sheet
     const logTable = logSheet.getDataRange().getValues();
     for (let i = 0; i < logTable.length; i++) {
-      const timestamp = logTable[i][0];
+      timestamp = logTable[i][0];
       const userState = logTable[i][1];
+      if(userState === "start"){
+        startTimestamp = timestamp;
+      }
       const processingTimestamp = new Date(timestamp);
       // 2024/02
       const timestampYearAndMonth = `${processingTimestamp.getFullYear()}` + "/" + `${String(processingTimestamp.getMonth() + 1).padStart(2, '0')}`;
 
       let haveTimestampYearAndMonthInSummarySheet = false;
-      let targetSummarySheet = "";
-
       summarySheets.forEach((summarySheet) => {
         // ex:) 2024/02 ∊ summary_2024/02
         if (summarySheet.getName().includes(timestampYearAndMonth)) {
@@ -34,40 +38,28 @@ function onSelectionChange(e) {
       })
 
       if (!haveTimestampYearAndMonthInSummarySheet) {
-        console.log("before copy function");
         const summarySheetName = "summary_" + timestampYearAndMonth;
         copySheet(summarySheetName, "template_summary", ss.getSheets());
         appendAllOfDaysInMonth(summarySheetName, ss.getSheets());
       }
-
-      // store current temp(month) . if they are different, transform it to 2d array, 
-      //setvalues to sheet then different create another datesmap
+      targetSummarySheet = "";
       isSameYearAndMonth = oneBackTimestampMonth == timestampYearAndMonth;
-      console.log("outside extract");
-      if (!isSameYearAndMonth && initFlag === 1 && userState === "start") {
+      // if detect different month and year, do set values in corrensponding sheet, 
+      if (!isSameYearAndMonth && !isFirstLoop && userState === "start") {
         targetSummarySheet = getSheetsBySubstring(oneBackTimestampMonth, ss)[0];
-        let twoDArrayToInsert = objectTo2DArray(eachdatesLogsMap);
+        const twoDArrayToInsert = objectTo2DArray(eachdatesLogsMap);
         console.log("twoDArrayToInsert");
         console.log(twoDArrayToInsert);
         //A3 to C33:
-
+        console.log("targetSummarySheet");
+        console.log(targetSummarySheet);
         targetSummarySheet.getRange(3, 1, 32, 3).setValues(
           twoDArrayToInsert
         );
+        targetSummarySheet.splice(0, targetSummarySheet.length);
       }
-      if (!isSameYearAndMonth && initFlag === 1 && userState === "modify-start") {
-        //extract modify
-
-      }
-      oneBackTimestampMonth = timestampYearAndMonth;
-      initFlag = 1;
-
-
-      //OK
-
-      //2024/02/09 17:43:33 start=> 9:{ start:"17:43", } 
-      //2024/02/10 20:43:33 start=>     stop:"20:43"} 
-      // TODO: try to validation that start, start, 
+      isFirstLoop = false;
+     
       if (logTable[i][1] === "start" && logTable[i + 1][1] === "stop") {
         eachdatesLogsMap = addEachdatesLogsMap(logTable[i][0], logTable[i + 1][0], eachdatesLogsMap);
       }
@@ -78,16 +70,26 @@ function onSelectionChange(e) {
         console.log(logTable[i + 1][0]);
         console.log(logTable[i + 2][0]);
         const restMinute = logTable[i + 2][0].getHours() * 60 + logTable[i + 2][0].getMinutes();
-        console.log("restMinute");
-        console.log(restMinute);
         eachdatesLogsMapForModify = addEachdatesLogsMapForModify(logTable[i][0], logTable[i + 1][0], restMinute, eachdatesLogsMapForModify);
         console.log("eachdatesLogsMapForModify");
         console.log(eachdatesLogsMapForModify);
 
       }
+      oneBackTimestampMonth = timestampYearAndMonth;
     }
     // after logtable loop
+    // setvalue 
+    console.log("startTimestamp"); 
+    console.log(startTimestamp); 
+    const targetSummarySheetName = getSummarySheetNameByDate(startTimestamp);
+    targetSummarySheet = ss.getSheetByName(targetSummarySheetName);
+    console.log("targetSummarySheet");
+    console.log(targetSummarySheet.getName()); 
+    targetSummarySheet.getRange(3, 1, 32, 3).setValues(
+          objectTo2DArray(eachdatesLogsMap)
+        );
     setModifyLogs(eachdatesLogsMapForModify, ss);
+    
   }
 }
 
@@ -237,7 +239,6 @@ function objectTo2DArray(data) {
 
   return result;
 }
-
 
 function getSheetsBySubstring(substring, ss) {
   const sheets = ss.getSheets();

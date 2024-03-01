@@ -1,23 +1,11 @@
 function doPost(e) {
   const spreadSheet = SpreadsheetApp.openByUrl(sheet_url);
-  console.log("action gas");
   const logSheet = spreadSheet.getSheetByName("log_sheet");
-  var payload = JSON.parse(e.parameter.payload);
-  console.log("inside");;
-  console.log("payload");
-  console.log(payload);
-  console.log("blocks");
-  //console.log(payload.blocks);
-  //console.log(payload.blocks[-1]);
+  const payload = JSON.parse(e.parameter.payload);
   const type = payload.type;
-  console.log("type");
-  console.log(type);
   //true => /start_work
   if (type === "block_actions") {
-    console.log("action start_work");
     const responseUrl = payload.response_url;
-    console.log("responseUrl");
-    console.log(responseUrl);
     const response = {
       text: "sent request successfully👊👊",
     };
@@ -27,8 +15,6 @@ function doPost(e) {
       payload: JSON.stringify(response),
     }
     UrlFetchApp.fetch(responseUrl, options);
-    console.log("payload");
-    console.log(payload);
     // Access the first action object from the actions array
     const action = payload.actions[0];
     // Retrieve the action timestamp (action_ts) from the action object
@@ -37,15 +23,6 @@ function doPost(e) {
   } else {
     ///modify
     // TOOD: create errors
-    console.log("else");
-
-    // const error = {
-    //   "response_action": "errors",
-    //   "errors": {
-    //     "my_block_id": "You may not select a due date in the past"
-    //   }
-    // }
-    // return ContentService.createTextOutput(JSON.stringify(error)).setMimeType(ContentService.MimeType.JSON);
     console.log("else");
     const values = payload.view.state.values;
     return modifyWorkProcess(logSheet, values);
@@ -170,14 +147,14 @@ const createModalView = () => {
 };
 
 function respondToUpdate() {
-  var url = 'https://slack.com/api/views.update';
+  const url = 'https://slack.com/api/views.update';
 
-  var headers = {
-    'Authorization': 'Bearer ' + slack_token,
+  const headers = {
+    'Authorization': 'Bearer ' + SLACK_TOKEN,
     'Content-Type': 'application/json'
   };
 
-  var data = {
+  const data = {
     'response_action': 'update',
     'view': {
       'type': 'modal',
@@ -197,31 +174,12 @@ function respondToUpdate() {
     }
   };
 
-  var options = {
+  const options = {
     'method': 'post',
     'headers': headers,
     'payload': JSON.stringify(data)
   };
 
-  var response = UrlFetchApp.fetch(url, options);
+  const response = UrlFetchApp.fetch(url, options);
   Logger.log(response.getContentText());
 }
-
-  // //https://api.slack.com/methods/views.push
-  // const triggerId = parsedData.trigger_id;
-  // console.log(triggerId);
-  // const url_update = "https://slack.com/api/views.push";
-  // const arg = {
-  //   token: slack_token,
-  //   trigger_id: triggerId,
-  //   view: createModalView(),
-  // };
-  // console.log("inside foller res");
-  // const res = UrlFetchApp.fetch(url_update, arg);
-  // console.log(res.toString());
-  // console.log(res.getResponseCode());
-  // console.log(res.getContent());
-  // console.log(res.getHeaders());
-  // console.log(res.getAllHeaders());
-  // console.log(res.getContentText());
-  // console.log(res.getBlob());

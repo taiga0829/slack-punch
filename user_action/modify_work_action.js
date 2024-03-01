@@ -32,24 +32,12 @@ function modifyWorkProcess(logSheet, values) {
     }
   }
 
-  // Log the values
-  console.log("Timepicker Start: " + timepicker_start);
-  console.log("Timepicker Finish: " + timepicker_finish);
-  console.log("Timepicker Rest: " + timepicker_rest);
-  console.log("Datepicker: " + datepicker);
-
   // Parse the date to a JavaScript Date object
   const parsedDate = new Date(datepicker);
-
-  // スプレッドシートを取得
-  const spreadSheet = SpreadsheetApp.openByUrl(sheet_url);
+  const spreadSheet = SpreadsheetApp.openByUrl(SHEET_URL);
   // Construct dates using new Date()
   const modify_start = new Date(datepicker + " " + timepicker_start + ":00");
-  console.log("modify_start");
-  console.log(modify_start);
   const modify_finish = new Date(datepicker + " " + timepicker_finish + ":00");
-  console.log("modify_finish");
-  console.log(modify_finish);
 
   const today = new Date();
 
