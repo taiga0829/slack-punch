@@ -1,5 +1,5 @@
 function doPost(e) {
-  const spreadSheet = SpreadsheetApp.openByUrl(sheet_url);
+  const spreadSheet = SpreadsheetApp.openByUrl(SHEET_URL);
   const logSheet = spreadSheet.getSheetByName("log_sheet");
   const payload = JSON.parse(e.parameter.payload);
   const type = payload.type;

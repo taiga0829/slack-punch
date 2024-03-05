@@ -7,7 +7,7 @@ function onSelectionChange(e) {
     const ss = e.source;
     let logSheet = ss.getSheetByName("log_sheet");
     let summarySheets = getSheetsBySubstring("summary", ss);
-    let eachdatesLogsMap = [];
+    let eachdatesLogsMap = {};
     let eachdatesLogsMapForModify = [];
     let targetSummarySheet = "";
     let timestamp;
@@ -22,7 +22,7 @@ function onSelectionChange(e) {
     for (let i = 0; i < logTable.length; i++) {
       timestamp = logTable[i][0];
       const userState = logTable[i][1];
-      if(userState === "start"){
+      if (userState === "start") {
         startTimestamp = timestamp;
       }
       const processingTimestamp = new Date(timestamp);
@@ -48,18 +48,18 @@ function onSelectionChange(e) {
       if (!isSameYearAndMonth && !isFirstLoop && userState === "start") {
         targetSummarySheet = getSheetsBySubstring(oneBackTimestampMonth, ss)[0];
         const twoDArrayToInsert = objectTo2DArray(eachdatesLogsMap);
+        //A3 to C33:
+        console.log("eachdatesLogsMap");
+        console.log(eachdatesLogsMap);
         console.log("twoDArrayToInsert");
         console.log(twoDArrayToInsert);
-        //A3 to C33:
-        console.log("targetSummarySheet");
-        console.log(targetSummarySheet);
         targetSummarySheet.getRange(3, 1, 32, 3).setValues(
           twoDArrayToInsert
         );
-        targetSummarySheet.splice(0, targetSummarySheet.length);
+        eachdatesLogsMap = {};
       }
       isFirstLoop = false;
-     
+
       if (logTable[i][1] === "start" && logTable[i + 1][1] === "stop") {
         eachdatesLogsMap = addEachdatesLogsMap(logTable[i][0], logTable[i + 1][0], eachdatesLogsMap);
       }
@@ -79,17 +79,15 @@ function onSelectionChange(e) {
     }
     // after logtable loop
     // setvalue 
-    console.log("startTimestamp"); 
-    console.log(startTimestamp); 
+
     const targetSummarySheetName = getSummarySheetNameByDate(startTimestamp);
     targetSummarySheet = ss.getSheetByName(targetSummarySheetName);
-    console.log("targetSummarySheet");
-    console.log(targetSummarySheet.getName()); 
+    console.log("twoDArrayToInsert");
+    console.log(objectTo2DArray(eachdatesLogsMap));
     targetSummarySheet.getRange(3, 1, 32, 3).setValues(
-          objectTo2DArray(eachdatesLogsMap)
-        );
+      objectTo2DArray(eachdatesLogsMap)
+    );
     setModifyLogs(eachdatesLogsMapForModify, ss);
-    
   }
 }
 
@@ -113,8 +111,6 @@ function setModifyLogs(modify2DArray, ss) {
     const rangeByDate = day + HIGHT_OF_SHEET;
     targetSheet.getRange(rangeByDate, 1, 1, 3).setValues([e]);
   })
-
-
 }
 
 function copySheet(sheetName, templateName, sheets) {
@@ -216,9 +212,10 @@ function objectTo2DArray(data) {
       if (dayData) {
         if (x === 0 && dayData[0]) {
           row.push(dayData[0].start);
-        } else if (x === 1 && dayData.length > 1) {
+        } else if (x === 1) {
+          console.log(dayData);
           row.push(dayData[dayData.length - 1].stop);
-        } else if (x === 2 && dayData.length > 1) {
+        } else if (x === 2) {
           let restTime = 0;
           for (let i = 1; i < dayData.length; i++) {
             const start = new Date(dayData[i - 1].stop);

@@ -42,10 +42,12 @@ function modifyWorkProcess(logSheet, values) {
   const today = new Date();
 
   //validation
-  if(modify_start >= modify_finish){
+  if(modify_start == modify_finish){
     return ContentService.createTextOutput(JSON.stringify(modifyStartAndModifyFinishError)).setMimeType(ContentService.MimeType.JSON);
   }else if(modify_start > today){
     return ContentService.createTextOutput(JSON.stringify(modifyStartError)).setMimeType(ContentService.MimeType.JSON);
+  }else if(modify_start>modify_finish){
+    modify_finish.setDate(modify_finish.getDate() + 1)
   }
   
   try {
@@ -69,7 +71,7 @@ const modifyStartError = {
 const modifyStartAndModifyFinishError = {
       "response_action": "errors",
       "errors": {
-        "start-time": "start time cannot be equal and greater than finish time",
-        "finish-time": "start time cannot be equal and greater than finish time"
+        "start-time": "start time cannot be equal",
+        "finish-time": "start time cannot be equal"
       }
     }
