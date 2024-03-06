@@ -1,4 +1,4 @@
-const HIGHT_OF_SHEET = 2;
+const HEIGHT_OF_SHEET = 2;
 function onSelectionChange(e) {
   console.log("inside select");
   // Check if e and e.source are not null
@@ -13,7 +13,9 @@ function onSelectionChange(e) {
     let timestamp;
     let startTimestamp;
     let isFirstLoop = true;
-    //OK
+
+    let tempStartTimestamp;
+    let tempStopTimestamp;
 
     let oneBackTimestampMonth = null;
     let isSameYearAndMonth = false;
@@ -60,8 +62,23 @@ function onSelectionChange(e) {
       }
       isFirstLoop = false;
 
-      if (logTable[i][1] === "start" && logTable[i + 1][1] === "stop") {
-        eachdatesLogsMap = addEachdatesLogsMap(logTable[i][0], logTable[i + 1][0], eachdatesLogsMap);
+
+      if (logTable[i][1] === "start" && !tempStartTimestamp) {
+        tempStartTimestamp = logTable[i][0];
+        console.log("tempStartTimestamp");
+        console.log(tempStartTimestamp);
+      }
+      if (logTable[i][1] === "stop" && !tempStopTimestamp) {
+        tempStopTimestamp = logTable[i][0];
+        console.log("tempStopTimestamp");
+        console.log(tempStopTimestamp);
+      }
+      if (tempStartTimestamp && tempStopTimestamp) {
+        eachdatesLogsMap = addEachdatesLogsMap(tempStartTimestamp, tempStopTimestamp, eachdatesLogsMap);
+        console.log("eachdatesLogsMap");
+        console.log(eachdatesLogsMap);
+        tempStartTimestamp=null;
+        tempStopTimestamp=null;
       }
       else if (logTable[i][1] === "modify-start") {
         //TODO: append 2d array
@@ -108,7 +125,7 @@ function setModifyLogs(modify2DArray, ss) {
     console.log(targetSheet);
     console.log("targetSheetName");
     console.log(targetSheetName);
-    const rangeByDate = day + HIGHT_OF_SHEET;
+    const rangeByDate = day + HEIGHT_OF_SHEET;
     targetSheet.getRange(rangeByDate, 1, 1, 3).setValues([e]);
   })
 }
