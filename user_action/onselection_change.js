@@ -1,6 +1,6 @@
 const HEIGHT_OF_SHEET = 2;
 function onSelectionChange(e) {
-  console.log("inside select");
+  Logger.log("inside select");
   // Check if e and e.source are not null
   if (e && e.source) {
     //e.source => spreadsheet
@@ -55,10 +55,10 @@ function onSelectionChange(e) {
         targetSummarySheet = getSheetsBySubstring(oneBackTimestampMonth, ss)[0];
         const twoDArrayToInsert = objectTo2DArray(eachdatesLogsMap);
         //A3 to C33:
-        console.log("eachdatesLogsMap");
-        console.log(eachdatesLogsMap);
-        console.log("twoDArrayToInsert");
-        console.log(twoDArrayToInsert);
+        Logger.log("eachdatesLogsMap");
+        Logger.log(eachdatesLogsMap);
+        Logger.log("twoDArrayToInsert");
+        Logger.log(twoDArrayToInsert);
    
         targetSummarySheet.getRange(3, 1, 32, 3).setValues(
           twoDArrayToInsert
@@ -70,31 +70,29 @@ function onSelectionChange(e) {
 
       if (logTable[i][1] === "start" && !tempStartTimestamp) {
         tempStartTimestamp = logTable[i][0];
-        console.log("tempStartTimestamp");
-        console.log(tempStartTimestamp);
+        Logger.log("tempStartTimestamp");
+        Logger.log(tempStartTimestamp);
       }
       if (logTable[i][1] === "stop" && !tempStopTimestamp) {
         tempStopTimestamp = logTable[i][0];
-        console.log("tempStopTimestamp");
-        console.log(tempStopTimestamp);
+        Logger.log("tempStopTimestamp");
+        Logger.log(tempStopTimestamp);
       }
       if (tempStartTimestamp && tempStopTimestamp) {
         eachdatesLogsMap = addEachdatesLogsMap(tempStartTimestamp, tempStopTimestamp, eachdatesLogsMap);
-        console.log("eachdatesLogsMap");
-        console.log(eachdatesLogsMap);
+        Logger.log("eachdatesLogsMap");
+        Logger.log(eachdatesLogsMap);
         tempStartTimestamp = null;
         tempStopTimestamp = null;
       }
       else if (logTable[i][1] === "modify-start") {
-        //TODO: append 2d array
-        console.log("======");
-        console.log(logTable[i][0]);
-        console.log(logTable[i + 1][0]);
-        console.log(logTable[i + 2][0]);
+        Logger.log(logTable[i][0]);
+        Logger.log(logTable[i + 1][0]);
+        Logger.log(logTable[i + 2][0]);
         const restMinute = logTable[i + 2][0].getHours() * 60 + logTable[i + 2][0].getMinutes();
         eachdatesLogsMapForModify = addEachdatesLogsMapForModify(logTable[i][0], logTable[i + 1][0], restMinute, eachdatesLogsMapForModify);
-        console.log("eachdatesLogsMapForModify");
-        console.log(eachdatesLogsMapForModify);
+        Logger.log("eachdatesLogsMapForModify");
+        Logger.log(eachdatesLogsMapForModify);
 
       }
       oneBackTimestampMonth = timestampYearAndMonth;
@@ -104,8 +102,8 @@ function onSelectionChange(e) {
 
     const targetSummarySheetName = getSummarySheetNameByDate(startTimestamp);
     targetSummarySheet = ss.getSheetByName(targetSummarySheetName);
-    console.log("twoDArrayToInsert");
-    console.log(objectTo2DArray(eachdatesLogsMap));
+    Logger.log("twoDArrayToInsert");
+    Logger.log(objectTo2DArray(eachdatesLogsMap));
     targetSummarySheet.getRange(3, 1, 32, 3).setValues(
       objectTo2DArray(eachdatesLogsMap)
     );
@@ -126,10 +124,10 @@ function setModifyLogs(modify2DArray, ss) {
     const day = startModifyDate.getDate();
     const targetSheetName = getSummarySheetNameByDate(startModifyDate);
     const targetSheet = ss.getSheetByName(targetSheetName);
-    console.log("targetSheet");
-    console.log(targetSheet);
-    console.log("targetSheetName");
-    console.log(targetSheetName);
+    Logger.log("targetSheet");
+    Logger.log(targetSheet);
+    Logger.log("targetSheetName");
+    Logger.log(targetSheetName);
     const rangeByDate = day + HEIGHT_OF_SHEET;
     targetSheet.getRange(rangeByDate, 1, 1, 3).setValues([e]);
   })
@@ -137,16 +135,14 @@ function setModifyLogs(modify2DArray, ss) {
 
 function copySheet(sheetName, templateName, sheets) {
   // Get sample sheet
-  console.log("inside copySheet");
+  Logger.log("inside copySheet");
   let templateSheet;
   sheets.forEach((sheet) => {
     if (sheet.getName() === templateName) {
       templateSheet = sheet;
     }
   })
-  //var templateSheet = spreadSheet.getSheetByName(templateName);
-  // Copy sample sheet to new sheet
-  // 0.5 sec
+
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   templateSheet.copyTo(ss).setName(sheetName);
 }
@@ -157,7 +153,6 @@ function addEachdatesLogsMapForModify(startTime, stopTime, restTime, eachdatesLo
   return eachdatesLogsMapForModify;
 }
 function appendAllOfDaysInMonth(sheetName, sheets) {
-  console.log("appendAll");
   let targetSheet;
   let rangeCnt = 0;
 
@@ -237,7 +232,7 @@ function objectTo2DArray(data) {
         if (x === 0 && dayData[0]) {
           row.push(dayData[0].start);
         } else if (x === 1) {
-          console.log(dayData);
+            Logger.log(dayData);
           row.push(dayData[dayData.length - 1].stop);
         } else if (x === 2) {
           let restTime = 0;
