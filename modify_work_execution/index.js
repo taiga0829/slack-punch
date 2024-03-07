@@ -1,8 +1,8 @@
 const SLACK_TOKEN = PropertiesService.getScriptProperties().getProperty("SLACK_TOKEN");
 function doPost(e) {
   const parameter = e.parameter;
-  console.log("modify parameter");
-  console.log(parameter);
+  Logger.log("modify parameter");
+  Logger.log(parameter);
 
   try {
     openModal(parameter);
